@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -13,6 +14,8 @@ import {
 import { mockReservations, mockExpenses, mockTasks } from "@/lib/mock-data";
 import { calculateDashboardStats } from "@/lib/calculations";
 import { TaskStatus } from "@/types";
+import { NewReservationDialog } from "@/components/forms/new-reservation-dialog";
+import { NewExpenseDialog } from "@/components/forms/new-expense-dialog";
 
 export function DashboardOverview() {
   const stats = calculateDashboardStats(mockReservations, mockExpenses);
@@ -185,25 +188,28 @@ export function DashboardOverview() {
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 md:grid-cols-3">
-            <button className="flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4 text-left transition-colors hover:bg-blue-100">
+            <div className="flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4">
               <Calendar className="h-8 w-8 text-blue-600" />
-              <div>
+              <div className="flex-1">
                 <p className="font-medium text-blue-900">Nouvelle Réservation</p>
                 <p className="text-xs text-blue-700">
                   Créer une réservation directe
                 </p>
               </div>
-            </button>
-            <button className="flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-4 text-left transition-colors hover:bg-green-100">
+            </div>
+            <div className="flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-4">
               <DollarSign className="h-8 w-8 text-green-600" />
-              <div>
+              <div className="flex-1">
                 <p className="font-medium text-green-900">Enregistrer Charge</p>
                 <p className="text-xs text-green-700">
                   Ajouter une dépense déductible
                 </p>
               </div>
-            </button>
-            <button className="flex items-center gap-3 rounded-lg border border-purple-200 bg-purple-50 p-4 text-left transition-colors hover:bg-purple-100">
+            </div>
+            <button
+              onClick={() => alert("La synchronisation sera effectuée depuis l'onglet Channel Manager")}
+              className="flex items-center gap-3 rounded-lg border border-purple-200 bg-purple-50 p-4 text-left transition-colors hover:bg-purple-100"
+            >
               <CheckCircle className="h-8 w-8 text-purple-600" />
               <div>
                 <p className="font-medium text-purple-900">Synchroniser</p>
@@ -212,6 +218,10 @@ export function DashboardOverview() {
                 </p>
               </div>
             </button>
+          </div>
+          <div className="mt-4 flex gap-3">
+            <NewReservationDialog />
+            <NewExpenseDialog />
           </div>
         </CardContent>
       </Card>

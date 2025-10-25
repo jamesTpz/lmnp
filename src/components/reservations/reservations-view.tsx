@@ -8,6 +8,7 @@ import { ReservationStatus, Platform } from "@/types";
 import { format, differenceInDays } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Calendar, User, MapPin, Euro, ExternalLink } from "lucide-react";
+import { NewReservationDialog } from "@/components/forms/new-reservation-dialog";
 
 const statusColors = {
   [ReservationStatus.PENDING]: "outline",
@@ -43,10 +44,7 @@ export function ReservationsView() {
             Gérez vos réservations et communications avec les locataires
           </p>
         </div>
-        <Button>
-          <Calendar className="mr-2 h-4 w-4" />
-          Nouvelle Réservation
-        </Button>
+        <NewReservationDialog />
       </div>
 
       <div className="grid gap-4">

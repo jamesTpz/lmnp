@@ -16,6 +16,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { groupExpensesByCategory } from "@/lib/calculations";
+import { NewExpenseDialog } from "@/components/forms/new-expense-dialog";
 
 const categoryLabels: Record<ExpenseCategory, string> = {
   [ExpenseCategory.PARCEL_RENT]: "Loyer Parcelle",
@@ -58,14 +59,14 @@ export function ExpensesView() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
+          <Button
+            variant="outline"
+            onClick={() => alert("Export fiscal: Fonctionnalité à venir. Les données seront exportées au format Excel pour votre expert-comptable.")}
+          >
             <Download className="mr-2 h-4 w-4" />
             Export Fiscal
           </Button>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Nouvelle Charge
-          </Button>
+          <NewExpenseDialog />
         </div>
       </div>
 

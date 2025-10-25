@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DashboardOverview } from "@/components/dashboard/dashboard-overview";
 import { ReservationsView } from "@/components/reservations/reservations-view";
+import { CalendarView } from "@/components/calendar/calendar-view";
 import { DepositsView } from "@/components/deposits/deposits-view";
 import { TasksView } from "@/components/tasks/tasks-view";
 import { InventoryView } from "@/components/inventory/inventory-view";
@@ -12,6 +13,7 @@ import { ChannelManagerView } from "@/components/channel-manager/channel-manager
 import {
   Home,
   CalendarCheck,
+  Calendar,
   DollarSign,
   ClipboardList,
   Package,
@@ -53,7 +55,7 @@ export default function HomePage() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-7 gap-2 bg-white p-1 shadow-sm">
+          <TabsList className="grid w-full grid-cols-8 gap-2 bg-white p-1 shadow-sm">
             <TabsTrigger
               value="dashboard"
               className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white"
@@ -67,6 +69,13 @@ export default function HomePage() {
             >
               <CalendarCheck className="h-4 w-4" />
               <span className="hidden sm:inline">Réservations</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="calendar"
+              className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+            >
+              <Calendar className="h-4 w-4" />
+              <span className="hidden sm:inline">Calendrier</span>
             </TabsTrigger>
             <TabsTrigger
               value="deposits"
@@ -111,6 +120,10 @@ export default function HomePage() {
 
           <TabsContent value="reservations" className="space-y-4">
             <ReservationsView />
+          </TabsContent>
+
+          <TabsContent value="calendar" className="space-y-4">
+            <CalendarView />
           </TabsContent>
 
           <TabsContent value="deposits" className="space-y-4">

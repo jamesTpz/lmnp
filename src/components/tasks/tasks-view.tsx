@@ -1,9 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { mockTasks, mockMobileHomes } from "@/lib/mock-data";
+import { mockTasks as initialTasks, mockMobileHomes } from "@/lib/mock-data";
 import { TaskType, TaskStatus } from "@/types";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -58,13 +59,28 @@ const taskStatusIcons = {
 };
 
 export function TasksView() {
-  const pendingCount = mockTasks.filter(
+  const [tasks, setTasks] = useState(initialTasks);
+
+  const updateTaskStatus = (taskId: string, newStatus: TaskStatus) => {
+    setTasks(tasks.map(task =>
+      task.id === taskId
+        ? {
+            ...task,
+            status: newStatus,
+            completedAt: newStatus === TaskStatus.COMPLETED ? new Date() : task.completedAt
+          }
+        : task
+    ));
+    alert(`Tâche mise à jour: ${newStatus === TaskStatus.COMPLETED ? "Terminée" : newStatus === TaskStatus.IN_PROGRESS ? "En cours" : "Pending"}`);
+  };
+
+  const pendingCount = tasks.filter(
     (t) => t.status === TaskStatus.PENDING
   ).length;
-  const inProgressCount = mockTasks.filter(
+  const inProgressCount = tasks.filter(
     (t) => t.status === TaskStatus.IN_PROGRESS
   ).length;
-  const completedCount = mockTasks.filter(
+  const completedCount = tasks.filter(
     (t) => t.status === TaskStatus.COMPLETED
   ).length;
 
@@ -77,7 +93,7 @@ export function TasksView() {
             Planification et suivi des interventions terrain
           </p>
         </div>
-        <Button>
+        <Button onClick={() => alert("Création de nouvelle tâche: Formulaire à venir")}>
           <ClipboardList className="mr-2 h-4 w-4" />
           Nouvelle Tâche
         </Button>
@@ -121,7 +137,7 @@ export function TasksView() {
 
       {/* Tasks List */}
       <div className="grid gap-4">
-        {mockTasks
+        {tasks
           .sort((a, b) => {
             // Sort by status (pending first), then by due date
             if (a.status !== b.status) {
@@ -243,14 +259,27 @@ export function TasksView() {
                   {task.status !== TaskStatus.COMPLETED && (
                     <div className="mt-4 flex gap-2 border-t pt-4">
                       {task.status === TaskStatus.PENDING && (
-                        <Button size="sm">Démarrer</Button>
+                        <Button
+                          size="sm"
+                          onClick={() => updateTaskStatus(task.id, TaskStatus.IN_PROGRESS)}
+                        >
+                          Démarrer
+                        </Button>
                       )}
                       {task.status === TaskStatus.IN_PROGRESS && (
-                        <Button size="sm" variant="default">
+                        <Button
+                          size="sm"
+                          variant="default"
+                          onClick={() => updateTaskStatus(task.id, TaskStatus.COMPLETED)}
+                        >
                           Marquer Terminée
                         </Button>
                       )}
-                      <Button size="sm" variant="outline">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => alert("Modification de tâche: Fonctionnalité à venir")}
+                      >
                         Modifier
                       </Button>
                     </div>
