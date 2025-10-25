@@ -13,6 +13,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ExpenseCategory } from "@/types";
 import { Plus } from "lucide-react";
 
@@ -93,30 +101,32 @@ export function NewExpenseDialog({ onSuccess }: { onSuccess?: () => void }) {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="category">Catégorie *</Label>
-              <select
-                id="category"
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+              <Select
                 value={formData.category}
-                onChange={(e) =>
+                onValueChange={(value) =>
                   setFormData({
                     ...formData,
-                    category: e.target.value as ExpenseCategory,
+                    category: value as ExpenseCategory,
                   })
                 }
-                required
               >
-                <option value={ExpenseCategory.PARCEL_RENT}>Loyer Parcelle</option>
-                <option value={ExpenseCategory.INSURANCE}>Assurance</option>
-                <option value={ExpenseCategory.MANAGEMENT_FEES}>
-                  Frais de Gestion
-                </option>
-                <option value={ExpenseCategory.MAINTENANCE}>Entretien</option>
-                <option value={ExpenseCategory.UTILITIES}>Services Publics</option>
-                <option value={ExpenseCategory.CLEANING}>Ménage</option>
-                <option value={ExpenseCategory.SUPPLIES}>Fournitures</option>
-                <option value={ExpenseCategory.MARKETING}>Marketing</option>
-                <option value={ExpenseCategory.OTHER}>Autres</option>
-              </select>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionner une catégorie" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ExpenseCategory.PARCEL_RENT}>Loyer Parcelle</SelectItem>
+                  <SelectItem value={ExpenseCategory.INSURANCE}>Assurance</SelectItem>
+                  <SelectItem value={ExpenseCategory.MANAGEMENT_FEES}>
+                    Frais de Gestion
+                  </SelectItem>
+                  <SelectItem value={ExpenseCategory.MAINTENANCE}>Entretien</SelectItem>
+                  <SelectItem value={ExpenseCategory.UTILITIES}>Services Publics</SelectItem>
+                  <SelectItem value={ExpenseCategory.CLEANING}>Ménage</SelectItem>
+                  <SelectItem value={ExpenseCategory.SUPPLIES}>Fournitures</SelectItem>
+                  <SelectItem value={ExpenseCategory.MARKETING}>Marketing</SelectItem>
+                  <SelectItem value={ExpenseCategory.OTHER}>Autres</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="date">Date *</Label>
@@ -131,14 +141,12 @@ export function NewExpenseDialog({ onSuccess }: { onSuccess?: () => void }) {
               />
             </div>
             <div className="flex items-center gap-2">
-              <input
+              <Checkbox
                 id="taxDeductible"
-                type="checkbox"
                 checked={formData.taxDeductible}
-                onChange={(e) =>
-                  setFormData({ ...formData, taxDeductible: e.target.checked })
+                onCheckedChange={(checked) =>
+                  setFormData({ ...formData, taxDeductible: checked === true })
                 }
-                className="h-4 w-4 rounded border-gray-300"
               />
               <Label htmlFor="taxDeductible" className="cursor-pointer">
                 Déductible fiscalement (BIC)

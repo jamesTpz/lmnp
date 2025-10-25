@@ -13,6 +13,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Platform } from "@/types";
 import { Calendar } from "lucide-react";
 
@@ -172,24 +179,26 @@ export function NewReservationDialog({ onSuccess }: { onSuccess?: () => void }) 
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="platform">Plateforme *</Label>
-                <select
-                  id="platform"
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                <Select
                   value={formData.platform}
-                  onChange={(e) =>
+                  onValueChange={(value) =>
                     setFormData({
                       ...formData,
-                      platform: e.target.value as Platform,
+                      platform: value as Platform,
                     })
                   }
-                  required
                 >
-                  <option value={Platform.DIRECT}>Réservation Directe</option>
-                  <option value={Platform.AIRBNB}>Airbnb</option>
-                  <option value={Platform.BOOKING}>Booking.com</option>
-                  <option value={Platform.VRBO}>Vrbo</option>
-                  <option value={Platform.OTHER}>Autre</option>
-                </select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner une plateforme" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={Platform.DIRECT}>Réservation Directe</SelectItem>
+                    <SelectItem value={Platform.AIRBNB}>Airbnb</SelectItem>
+                    <SelectItem value={Platform.BOOKING}>Booking.com</SelectItem>
+                    <SelectItem value={Platform.VRBO}>Vrbo</SelectItem>
+                    <SelectItem value={Platform.OTHER}>Autre</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
