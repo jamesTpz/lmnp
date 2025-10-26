@@ -124,7 +124,7 @@ export function InventoryView() {
                           </p>
                         )}
                       </div>
-                      <Button size="sm" variant="outline">
+                      <Button size="sm" variant="default">
                         Modifier
                       </Button>
                     </div>
@@ -137,20 +137,20 @@ export function InventoryView() {
       })}
 
       {/* Digital Checklist Feature */}
-      <Card className="border-2 border-blue-200 bg-blue-50">
+      <Card className="border-2 border-black bg-white">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-blue-900">
+          <CardTitle className="flex items-center gap-2 text-">
             <FileText className="h-5 w-5" />
             États des Lieux Digitalisés
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <p className="text-sm text-blue-800">
+          <p className="text-sm text-foreground">
             Créez des formulaires d&apos;état des lieux numériques pour simplifier
             les check-in et check-out. Signature électronique disponible.
           </p>
           <div className="grid gap-2 md:grid-cols-2">
-            <Button className="bg-blue-600 hover:bg-blue-700">
+            <Button className="bg-black hover:bg-blue-700">
               <Plus className="mr-2 h-4 w-4" />
               État des Lieux d&apos;Entrée
             </Button>

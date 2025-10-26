@@ -101,6 +101,9 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+.bg-card {
+  background-color: hsl(var(--card));
+}
 
 /* Minimal scrollbar */
 ::-webkit-scrollbar {

@@ -25,7 +25,7 @@ export default function HomePage() {
   const [activeTab, setActiveTab] = useState("dashboard");
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gray-100">
       {/* Minimal clean header */}
       <header className="border-b bg-card">
         <div className="container mx-auto px-6 py-4">
@@ -55,59 +55,59 @@ export default function HomePage() {
       {/* Main Content */}
       <main className="container mx-auto px-6 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-          <TabsList className="grid w-full grid-cols-8 gap-1 bg-muted/50 p-1 rounded-lg border border-border/50">
+          <TabsList className="grid w-full grid-cols-8 gap-1 bg-muted/50 p-1 rounded-lg border border-border/50 bg-card">
             <TabsTrigger
               value="dashboard"
-              className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+              className="flex items-center gap-2 data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
               <Home className="h-4 w-4" />
               <span className="hidden sm:inline">Tableau de bord</span>
             </TabsTrigger>
             <TabsTrigger
               value="reservations"
-              className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+              className="flex items-center gap-2 data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
               <CalendarCheck className="h-4 w-4" />
               <span className="hidden sm:inline">Réservations</span>
             </TabsTrigger>
             <TabsTrigger
               value="calendar"
-              className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+              className="flex items-center gap-2 data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
               <Calendar className="h-4 w-4" />
               <span className="hidden sm:inline">Calendrier</span>
             </TabsTrigger>
             <TabsTrigger
               value="deposits"
-              className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+              className="flex items-center gap-2 data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
               <DollarSign className="h-4 w-4" />
               <span className="hidden sm:inline">Cautions</span>
             </TabsTrigger>
             <TabsTrigger
               value="tasks"
-              className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+              className="flex items-center gap-2 data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
               <ClipboardList className="h-4 w-4" />
               <span className="hidden sm:inline">Tâches</span>
             </TabsTrigger>
             <TabsTrigger
               value="inventory"
-              className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+              className="flex items-center gap-2 data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
               <Package className="h-4 w-4" />
               <span className="hidden sm:inline">Inventaire</span>
             </TabsTrigger>
             <TabsTrigger
               value="expenses"
-              className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+              className="flex items-center gap-2 data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
               <Receipt className="h-4 w-4" />
               <span className="hidden sm:inline">Charges</span>
             </TabsTrigger>
             <TabsTrigger
               value="channel-manager"
-              className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+              className="flex items-center gap-2 data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-sm"
             >
               <RefreshCw className="h-4 w-4" />
               <span className="hidden sm:inline">Channel Mgr</span>

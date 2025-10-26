@@ -68,7 +68,8 @@ export function ChannelManagerView() {
         <Button
           onClick={handleSync}
           disabled={syncing}
-          className="bg-blue-600 hover:bg-blue-700"
+		  variant="default"
+          className=""
         >
           {syncing ? (
             <>
@@ -85,17 +86,17 @@ export function ChannelManagerView() {
       </div>
 
       {/* Info Banner */}
-      <Card className="border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50">
+      <Card className="border-2 border-blue-200 bg-card">
         <CardContent className="pt-6">
           <div className="flex items-start gap-4">
-            <div className="rounded-full bg-blue-600 p-3">
+            <div className="rounded-full bg-black p-3">
               <Zap className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h3 className="font-semibold text-blue-900">
+              <h3 className="font-semibold text-foreground">
                 Évitez les Doubles Réservations
               </h3>
-              <p className="mt-1 text-sm text-blue-700">
+              <p className="mt-1 text-sm text-foreground">
                 Le Channel Manager synchronise automatiquement vos disponibilités
                 et tarifs sur toutes les plateformes en temps réel. Plus de risque
                 de surboking!

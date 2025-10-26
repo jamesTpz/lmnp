@@ -26,7 +26,7 @@ export function DashboardOverview() {
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
-      <div className="rounded-lg bg-gradient-to-r from-blue-600 to-blue-800 p-6 text-white shadow-lg">
+      <div className="rounded-lg bg-black p-6 text-white shadow-lg">
         <h2 className="text-2xl font-bold">Bienvenue sur LMNP-Serenity</h2>
         <p className="mt-2 text-blue-100">
           Pilotez votre activité de location meublée à distance en toute
