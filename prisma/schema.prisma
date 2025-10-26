@@ -1,0 +1,281 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  firstName     String?
+  lastName      String?
+  role          UserRole  @default(OWNER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  mobileHomes   MobileHome[]
+  @@map("users")
+}
+
+enum UserRole {
+  OWNER
+  ADMIN
+}
+
+model MobileHome {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  location    String
+  capacity    Int
+  bedrooms    Int
+  bathrooms   Int
+  amenities   String[]
+  photos      String[]
+  basePrice   Float
+  ownerId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner         User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  reservations  Reservation[]
+  tasks         OperationalTask[]
+  inventory     InventoryItem[]
+  expenses      Expense[]
+
+  @@map("mobile_homes")
+}
+
+model Tenant {
+  id              String   @id @default(cuid())
+  firstName       String
+  lastName        String
+  email           String
+  phone           String
+  address         String?
+  identityDocument String?
+  createdAt       DateTime @default(now())
+
+  reservations    Reservation[]
+
+  @@map("tenants")
+}
+
+model Reservation {
+  id                      String            @id @default(cuid())
+  mobileHomeId            String
+  tenantId                String
+  checkInDate             DateTime
+  checkOutDate            DateTime
+  numberOfGuests          Int
+  totalPrice              Float
+  platformFee             Float?
+  netRevenue              Float
+  status                  ReservationStatus
+  platform                Platform
+  depositAmount           Float
+  depositStatus           DepositStatus
+  depositReceivedDate     DateTime?
+  depositRefundedDate     DateTime?
+  notes                   String?
+  confirmationSent        Boolean           @default(false)
+  arrivalInstructionsSent Boolean           @default(false)
+  createdAt               DateTime          @default(now())
+  updatedAt               DateTime          @updatedAt
+
+  mobileHome        MobileHome        @relation(fields: [mobileHomeId], references: [id], onDelete: Cascade)
+  tenant            Tenant            @relation(fields: [tenantId], references: [id])
+  depositDeductions DepositDeduction[]
+  tasks             OperationalTask[]
+  inventoryChecks   InventoryCheck[]
+
+  @@map("reservations")
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  CHECKED_IN
+  CHECKED_OUT
+  CANCELLED
+}
+
+enum Platform {
+  DIRECT
+  AIRBNB
+  BOOKING
+  VRBO
+  OTHER
+}
+
+enum DepositStatus {
+  AWAITING
+  RECEIVED
+  HELD
+  PARTIALLY_REFUNDED
+  FULLY_REFUNDED
+}
+
+model DepositDeduction {
+  id            String   @id @default(cuid())
+  reservationId String
+  description   String
+  amount        Float
+  invoiceUrl    String?
+  createdAt     DateTime @default(now())
+
+  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+
+  @@map("deposit_deductions")
+}
+
+model OperationalTask {
+  id            String      @id @default(cuid())
+  mobileHomeId  String
+  reservationId String?
+  type          TaskType
+  title         String
+  description   String?
+  assignedTo    String?
+  dueDate       DateTime
+  status        TaskStatus
+  completedAt   DateTime?
+  notes         String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  mobileHome    MobileHome   @relation(fields: [mobileHomeId], references: [id], onDelete: Cascade)
+  reservation   Reservation? @relation(fields: [reservationId], references: [id])
+
+  @@map("operational_tasks")
+}
+
+enum TaskType {
+  CLEANING
+  MAINTENANCE
+  INVENTORY_CHECK
+  DEPOSIT_VERIFICATION
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+model InventoryItem {
+  id            String    @id @default(cuid())
+  mobileHomeId  String
+  name          String
+  category      String
+  quantity      Int
+  condition     String?
+  photos        String[]
+  lastChecked   DateTime?
+
+  mobileHome    MobileHome @relation(fields: [mobileHomeId], references: [id], onDelete: Cascade)
+  checkItems    InventoryCheckItem[]
+
+  @@map("inventory_items")
+}
+
+model InventoryCheck {
+  id            String      @id @default(cuid())
+  mobileHomeId  String
+  reservationId String?
+  checkType     CheckType
+  performedBy   String
+  performedAt   DateTime
+  notes         String?
+  signatureUrl  String?
+
+  items         InventoryCheckItem[]
+  reservation   Reservation? @relation(fields: [reservationId], references: [id])
+
+  @@map("inventory_checks")
+}
+
+enum CheckType {
+  CHECK_IN
+  CHECK_OUT
+}
+
+model InventoryCheckItem {
+  id              String    @id @default(cuid())
+  checkId         String
+  inventoryItemId String
+  name            String
+  condition       ItemCondition
+  notes           String?
+  photos          String[]
+
+  check           InventoryCheck @relation(fields: [checkId], references: [id], onDelete: Cascade)
+  inventoryItem   InventoryItem  @relation(fields: [inventoryItemId], references: [id])
+
+  @@map("inventory_check_items")
+}
+
+enum ItemCondition {
+  EXCELLENT
+  GOOD
+  FAIR
+  POOR
+  MISSING
+}
+
+model Expense {
+  id            String          @id @default(cuid())
+  mobileHomeId  String?
+  category      ExpenseCategory
+  description   String
+  amount        Float
+  date          DateTime
+  invoiceUrl    String?
+  taxDeductible Boolean         @default(true)
+  notes         String?
+  createdAt     DateTime        @default(now())
+
+  mobileHome    MobileHome? @relation(fields: [mobileHomeId], references: [id])
+
+  @@map("expenses")
+}
+
+enum ExpenseCategory {
+  PARCEL_RENT
+  INSURANCE
+  MANAGEMENT_FEES
+  MAINTENANCE
+  UTILITIES
+  CLEANING
+  SUPPLIES
+  MARKETING
+  OTHER
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  amount        Float
+  currency      String        @default("EUR")
+  status        PaymentStatus
+  stripePaymentId String?     @unique
+  metadata      Json?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@map("payments")
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
