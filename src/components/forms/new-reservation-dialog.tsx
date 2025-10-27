@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -20,52 +20,77 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Platform } from "@/types";
-import { Calendar } from "lucide-react";
+import { Platform, ReservationStatus, DepositStatus } from "@/types";
+import { Calendar, Loader2, AlertCircle } from "lucide-react";
+import { useReservations, useTenants, useMobileHomes } from "@/hooks/useData";
 
 export function NewReservationDialog({ onSuccess }: { onSuccess?: () => void }) {
   const [open, setOpen] = useState(false);
+  const { createReservation } = useReservations();
+  const { tenants, loading: loadingTenants } = useTenants();
+  const { mobileHomes, loading: loadingMobileHomes } = useMobileHomes();
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const [formData, setFormData] = useState({
-    guestFirstName: "",
-    guestLastName: "",
-    guestEmail: "",
-    guestPhone: "",
-    checkIn: "",
-    checkOut: "",
-    guests: "2",
+    tenantId: "",
+    mobileHomeId: "",
+    checkInDate: "",
+    checkOutDate: "",
+    numberOfGuests: 2,
     platform: Platform.DIRECT,
-    totalPrice: "",
-    depositAmount: "500",
+    totalPrice: 0,
+    platformFee: 0,
+    depositAmount: 500,
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setSubmitting(true);
 
-    // Simuler l'ajout de la réservation
-    console.log("Nouvelle réservation:", formData);
+    try {
+      // Calculate net revenue
+      const netRevenue = formData.totalPrice - (formData.platformFee || 0);
 
-    // Réinitialiser le formulaire
-    setFormData({
-      guestFirstName: "",
-      guestLastName: "",
-      guestEmail: "",
-      guestPhone: "",
-      checkIn: "",
-      checkOut: "",
-      guests: "2",
-      platform: Platform.DIRECT,
-      totalPrice: "",
-      depositAmount: "500",
-    });
+      await createReservation({
+        tenantId: formData.tenantId,
+        mobileHomeId: formData.mobileHomeId,
+        checkInDate: new Date(formData.checkInDate).toISOString(),
+        checkOutDate: new Date(formData.checkOutDate).toISOString(),
+        numberOfGuests: formData.numberOfGuests,
+        totalPrice: formData.totalPrice,
+        platformFee: formData.platformFee || 0,
+        netRevenue,
+        status: ReservationStatus.CONFIRMED,
+        platform: formData.platform,
+        depositAmount: formData.depositAmount,
+        depositStatus: DepositStatus.AWAITING,
+      });
 
-    setOpen(false);
-    onSuccess?.();
+      // Reset form
+      setFormData({
+        tenantId: "",
+        mobileHomeId: "",
+        checkInDate: "",
+        checkOutDate: "",
+        numberOfGuests: 2,
+        platform: Platform.DIRECT,
+        totalPrice: 0,
+        platformFee: 0,
+        depositAmount: 500,
+      });
 
-    // Afficher un message de confirmation
-    alert(
-      `Réservation pour ${formData.guestFirstName} ${formData.guestLastName} créée avec succès!`
-    );
+      setOpen(false);
+      onSuccess?.();
+    } catch (err: any) {
+      setError(err.message || "Erreur lors de la création de la réservation");
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  const loading = loadingTenants || loadingMobileHomes;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -80,163 +105,221 @@ export function NewReservationDialog({ onSuccess }: { onSuccess?: () => void }) 
           <DialogHeader>
             <DialogTitle>Nouvelle Réservation</DialogTitle>
             <DialogDescription>
-              Créer une réservation directe pour votre mobil-home
+              Créez une nouvelle réservation pour votre mobile home
             </DialogDescription>
           </DialogHeader>
+
+          {error && (
+            <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md border border-destructive/20 flex items-center gap-2 my-4">
+              <AlertCircle className="h-4 w-4" />
+              {error}
+            </div>
+          )}
+
           <div className="grid gap-4 py-4">
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-2">
+              <Label htmlFor="tenantId">Locataire *</Label>
+              <Select
+                value={formData.tenantId}
+                onValueChange={(value) => setFormData({ ...formData, tenantId: value })}
+                disabled={loading || submitting}
+                required
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionner un locataire" />
+                </SelectTrigger>
+                <SelectContent>
+                  {tenants.map((tenant) => (
+                    <SelectItem key={tenant.id} value={tenant.id}>
+                      {tenant.firstName} {tenant.lastName} - {tenant.email}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="mobileHomeId">Mobile Home *</Label>
+              <Select
+                value={formData.mobileHomeId}
+                onValueChange={(value) => setFormData({ ...formData, mobileHomeId: value })}
+                disabled={loading || submitting}
+                required
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionner un mobile home" />
+                </SelectTrigger>
+                <SelectContent>
+                  {mobileHomes.map((mh) => (
+                    <SelectItem key={mh.id} value={mh.id}>
+                      {mh.name} - {mh.location}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="firstName">Prénom *</Label>
+                <Label htmlFor="checkInDate">Date d'arrivée *</Label>
                 <Input
-                  id="firstName"
-                  value={formData.guestFirstName}
+                  id="checkInDate"
+                  type="date"
+                  value={formData.checkInDate}
                   onChange={(e) =>
-                    setFormData({ ...formData, guestFirstName: e.target.value })
+                    setFormData({ ...formData, checkInDate: e.target.value })
                   }
-                  placeholder="Marie"
                   required
+                  disabled={submitting}
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="lastName">Nom *</Label>
+                <Label htmlFor="checkOutDate">Date de départ *</Label>
                 <Input
-                  id="lastName"
-                  value={formData.guestLastName}
+                  id="checkOutDate"
+                  type="date"
+                  value={formData.checkOutDate}
                   onChange={(e) =>
-                    setFormData({ ...formData, guestLastName: e.target.value })
+                    setFormData({ ...formData, checkOutDate: e.target.value })
                   }
-                  placeholder="Dupont"
                   required
+                  disabled={submitting}
                 />
               </div>
             </div>
+
             <div className="grid gap-2">
-              <Label htmlFor="email">Email *</Label>
+              <Label htmlFor="numberOfGuests">Nombre de voyageurs *</Label>
               <Input
-                id="email"
-                type="email"
-                value={formData.guestEmail}
+                id="numberOfGuests"
+                type="number"
+                min="1"
+                value={formData.numberOfGuests}
                 onChange={(e) =>
-                  setFormData({ ...formData, guestEmail: e.target.value })
+                  setFormData({
+                    ...formData,
+                    numberOfGuests: parseInt(e.target.value),
+                  })
                 }
-                placeholder="marie.dupont@email.fr"
                 required
+                disabled={submitting}
               />
             </div>
+
             <div className="grid gap-2">
-              <Label htmlFor="phone">Téléphone *</Label>
-              <Input
-                id="phone"
-                type="tel"
-                value={formData.guestPhone}
-                onChange={(e) =>
-                  setFormData({ ...formData, guestPhone: e.target.value })
+              <Label htmlFor="platform">Plateforme *</Label>
+              <Select
+                value={formData.platform}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, platform: value as Platform })
                 }
-                placeholder="+33 6 12 34 56 78"
-                required
-              />
+                disabled={submitting}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionner une plateforme" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={Platform.DIRECT}>Réservation Directe</SelectItem>
+                  <SelectItem value={Platform.AIRBNB}>Airbnb</SelectItem>
+                  <SelectItem value={Platform.BOOKING}>Booking.com</SelectItem>
+                  <SelectItem value={Platform.VRBO}>Vrbo</SelectItem>
+                  <SelectItem value={Platform.OTHER}>Autre</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="grid gap-2">
-                <Label htmlFor="checkIn">Date d&apos;arrivée *</Label>
-                <Input
-                  id="checkIn"
-                  type="date"
-                  value={formData.checkIn}
-                  onChange={(e) =>
-                    setFormData({ ...formData, checkIn: e.target.value })
-                  }
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="checkOut">Date de départ *</Label>
-                <Input
-                  id="checkOut"
-                  type="date"
-                  value={formData.checkOut}
-                  onChange={(e) =>
-                    setFormData({ ...formData, checkOut: e.target.value })
-                  }
-                  required
-                />
-              </div>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="grid gap-2">
-                <Label htmlFor="guests">Nombre de voyageurs *</Label>
-                <Input
-                  id="guests"
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={formData.guests}
-                  onChange={(e) =>
-                    setFormData({ ...formData, guests: e.target.value })
-                  }
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="platform">Plateforme *</Label>
-                <Select
-                  value={formData.platform}
-                  onValueChange={(value) =>
-                    setFormData({
-                      ...formData,
-                      platform: value as Platform,
-                    })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner une plateforme" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={Platform.DIRECT}>Réservation Directe</SelectItem>
-                    <SelectItem value={Platform.AIRBNB}>Airbnb</SelectItem>
-                    <SelectItem value={Platform.BOOKING}>Booking.com</SelectItem>
-                    <SelectItem value={Platform.VRBO}>Vrbo</SelectItem>
-                    <SelectItem value={Platform.OTHER}>Autre</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
+
+            <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="totalPrice">Prix total (€) *</Label>
                 <Input
                   id="totalPrice"
                   type="number"
                   step="0.01"
+                  min="0"
                   value={formData.totalPrice}
                   onChange={(e) =>
-                    setFormData({ ...formData, totalPrice: e.target.value })
+                    setFormData({
+                      ...formData,
+                      totalPrice: parseFloat(e.target.value),
+                    })
                   }
-                  placeholder="840.00"
                   required
+                  disabled={submitting}
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="depositAmount">Caution (€) *</Label>
+                <Label htmlFor="platformFee">Commission plateforme (€)</Label>
                 <Input
-                  id="depositAmount"
+                  id="platformFee"
                   type="number"
                   step="0.01"
-                  value={formData.depositAmount}
+                  min="0"
+                  value={formData.platformFee}
                   onChange={(e) =>
-                    setFormData({ ...formData, depositAmount: e.target.value })
+                    setFormData({
+                      ...formData,
+                      platformFee: parseFloat(e.target.value),
+                    })
                   }
-                  placeholder="500.00"
-                  required
+                  disabled={submitting}
                 />
               </div>
             </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="depositAmount">Caution (€) *</Label>
+              <Input
+                id="depositAmount"
+                type="number"
+                step="0.01"
+                min="0"
+                value={formData.depositAmount}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    depositAmount: parseFloat(e.target.value),
+                  })
+                }
+                required
+                disabled={submitting}
+              />
+            </div>
+
+            {tenants.length === 0 && (
+              <div className="bg-amber-50 border border-amber-200 rounded-md p-3 text-sm text-amber-800">
+                Aucun locataire trouvé. Créez d'abord un locataire dans l'onglet "Locataires".
+              </div>
+            )}
+
+            {mobileHomes.length === 0 && (
+              <div className="bg-amber-50 border border-amber-200 rounded-md p-3 text-sm text-amber-800">
+                Aucun mobile home trouvé. Créez d'abord un mobile home dans l'onglet "Mobile Homes".
+              </div>
+            )}
           </div>
+
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+              disabled={submitting}
+            >
               Annuler
             </Button>
-            <Button type="submit">Créer la réservation</Button>
+            <Button
+              type="submit"
+              disabled={submitting || tenants.length === 0 || mobileHomes.length === 0}
+            >
+              {submitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Création...
+                </>
+              ) : (
+                "Créer la réservation"
+              )}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

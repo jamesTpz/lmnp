@@ -291,11 +291,145 @@ export function useMobileHomes() {
     }
   }
 
+  const updateMobileHome = async (id: string, updates: any) => {
+    try {
+      const response = await fetch(`/api/mobile-homes/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      })
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la mise à jour')
+      }
+
+      const data = await response.json()
+      setMobileHomes(mobileHomes.map(mh => mh.id === id ? data.mobileHome : mh))
+      return data.mobileHome
+    } catch (err: any) {
+      throw err
+    }
+  }
+
+  const deleteMobileHome = async (id: string) => {
+    try {
+      const response = await fetch(`/api/mobile-homes/${id}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la suppression')
+      }
+
+      setMobileHomes(mobileHomes.filter(mh => mh.id !== id))
+    } catch (err: any) {
+      throw err
+    }
+  }
+
   return {
     mobileHomes,
     loading,
     error,
     refreshMobileHomes: fetchMobileHomes,
     createMobileHome,
+    updateMobileHome,
+    deleteMobileHome,
+  }
+}
+
+export function useTenants() {
+  const [tenants, setTenants] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchTenants = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/tenants')
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la récupération des locataires')
+      }
+
+      const data = await response.json()
+      setTenants(data.tenants || [])
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchTenants()
+  }, [])
+
+  const createTenant = async (tenantData: any) => {
+    try {
+      const response = await fetch('/api/tenants', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(tenantData),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Erreur lors de la création')
+      }
+
+      const data = await response.json()
+      setTenants([data.tenant, ...tenants])
+      return data.tenant
+    } catch (err: any) {
+      throw err
+    }
+  }
+
+  const updateTenant = async (id: string, updates: any) => {
+    try {
+      const response = await fetch(`/api/tenants/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      })
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la mise à jour')
+      }
+
+      const data = await response.json()
+      setTenants(tenants.map(t => t.id === id ? data.tenant : t))
+      return data.tenant
+    } catch (err: any) {
+      throw err
+    }
+  }
+
+  const deleteTenant = async (id: string) => {
+    try {
+      const response = await fetch(`/api/tenants/${id}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Erreur lors de la suppression')
+      }
+
+      setTenants(tenants.filter(t => t.id !== id))
+    } catch (err: any) {
+      throw err
+    }
+  }
+
+  return {
+    tenants,
+    loading,
+    error,
+    refreshTenants: fetchTenants,
+    createTenant,
+    updateTenant,
+    deleteTenant,
   }
 }

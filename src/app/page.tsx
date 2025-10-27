@@ -11,10 +11,12 @@ import { TasksView } from "@/components/tasks/tasks-view";
 import { InventoryView } from "@/components/inventory/inventory-view";
 import { ExpensesView } from "@/components/expenses/expenses-view";
 import { ChannelManagerView } from "@/components/channel-manager/channel-manager-view";
+import { TenantsView } from "@/components/tenants/tenants-view";
+import { MobileHomesView } from "@/components/mobile-homes/mobile-homes-view";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { useAuth } from "@/contexts/auth-context";
 import {
-  Home,
+  Home as HomeIcon,
   CalendarCheck,
   Calendar,
   DollarSign,
@@ -24,6 +26,8 @@ import {
   RefreshCw,
   LogOut,
   User,
+  Users,
+  Home,
 } from "lucide-react";
 
 export default function HomePage() {
@@ -74,12 +78,12 @@ export default function HomePage() {
         {/* Main Content */}
         <main className="container mx-auto px-6 py-8">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-            <TabsList className="grid w-full grid-cols-8 gap-1 bg-muted/50 p-1 rounded-lg border border-border/50 bg-card">
+            <TabsList className="grid w-full grid-cols-10 gap-1 bg-muted/50 p-1 rounded-lg border border-border/50 bg-card">
               <TabsTrigger
                 value="dashboard"
                 className="flex items-center gap-2 data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-sm"
               >
-                <Home className="h-4 w-4" />
+                <HomeIcon className="h-4 w-4" />
                 <span className="hidden sm:inline">Tableau de bord</span>
               </TabsTrigger>
               <TabsTrigger
@@ -131,6 +135,20 @@ export default function HomePage() {
                 <RefreshCw className="h-4 w-4" />
                 <span className="hidden sm:inline">Channel Mgr</span>
               </TabsTrigger>
+              <TabsTrigger
+                value="tenants"
+                className="flex items-center gap-2 data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-sm"
+              >
+                <Users className="h-4 w-4" />
+                <span className="hidden sm:inline">Locataires</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="mobile-homes"
+                className="flex items-center gap-2 data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:shadow-sm"
+              >
+                <Home className="h-4 w-4" />
+                <span className="hidden sm:inline">Mobile Homes</span>
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="dashboard" className="space-y-4">
@@ -163,6 +181,14 @@ export default function HomePage() {
 
             <TabsContent value="channel-manager" className="space-y-4">
               <ChannelManagerView />
+            </TabsContent>
+
+            <TabsContent value="tenants" className="space-y-4">
+              <TenantsView />
+            </TabsContent>
+
+            <TabsContent value="mobile-homes" className="space-y-4">
+              <MobileHomesView />
             </TabsContent>
           </Tabs>
         </main>
