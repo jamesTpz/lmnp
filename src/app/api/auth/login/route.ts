@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const session = await getIronSession<SessionData>(cookies(), sessionOptions)
+    const session = await getIronSession<SessionData>(await cookies(), sessionOptions)
 
     session.userId = user.id
     session.email = user.email

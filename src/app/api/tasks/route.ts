@@ -7,7 +7,7 @@ import { prisma } from '@/lib/prisma'
 // GET all tasks for the logged-in user
 export async function GET(request: NextRequest) {
   try {
-    const session = await getIronSession<SessionData>(cookies(), sessionOptions)
+    const session = await getIronSession<SessionData>(await cookies(), sessionOptions)
 
     if (!session.isLoggedIn) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
 // POST create a new task
 export async function POST(request: NextRequest) {
   try {
-    const session = await getIronSession<SessionData>(cookies(), sessionOptions)
+    const session = await getIronSession<SessionData>(await cookies(), sessionOptions)
 
     if (!session.isLoggedIn) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })

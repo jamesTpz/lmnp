@@ -5,7 +5,7 @@ import { sessionOptions, SessionData, defaultSession } from '@/lib/auth'
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getIronSession<SessionData>(cookies(), sessionOptions)
+    const session = await getIronSession<SessionData>(await cookies(), sessionOptions)
 
     if (!session.isLoggedIn) {
       return NextResponse.json({ session: defaultSession })

@@ -6,21 +6,22 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  password      String
-  firstName     String?
-  lastName      String?
-  role          UserRole  @default(OWNER)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  firstName String?
+  lastName  String?
+  role      UserRole @default(OWNER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  mobileHomes   MobileHome[]
+  mobileHomes MobileHome[]
+
   @@map("users")
 }
 
@@ -37,33 +38,33 @@ model MobileHome {
   capacity    Int
   bedrooms    Int
   bathrooms   Int
-  amenities   String[]
-  photos      String[]
+  amenities   Json?
+  photos      Json?
   basePrice   Float
   ownerId     String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  owner         User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  reservations  Reservation[]
-  tasks         OperationalTask[]
-  inventory     InventoryItem[]
-  expenses      Expense[]
+  owner        User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  reservations Reservation[]
+  tasks        OperationalTask[]
+  inventory    InventoryItem[]
+  expenses     Expense[]
 
   @@map("mobile_homes")
 }
 
 model Tenant {
-  id              String   @id @default(cuid())
-  firstName       String
-  lastName        String
-  email           String
-  phone           String
-  address         String?
+  id               String   @id @default(cuid())
+  firstName        String
+  lastName         String
+  email            String
+  phone            String
+  address          String?
   identityDocument String?
-  createdAt       DateTime @default(now())
+  createdAt        DateTime @default(now())
 
-  reservations    Reservation[]
+  reservations Reservation[]
 
   @@map("tenants")
 }
@@ -90,8 +91,8 @@ model Reservation {
   createdAt               DateTime          @default(now())
   updatedAt               DateTime          @updatedAt
 
-  mobileHome        MobileHome        @relation(fields: [mobileHomeId], references: [id], onDelete: Cascade)
-  tenant            Tenant            @relation(fields: [tenantId], references: [id])
+  mobileHome        MobileHome         @relation(fields: [mobileHomeId], references: [id], onDelete: Cascade)
+  tenant            Tenant             @relation(fields: [tenantId], references: [id])
   depositDeductions DepositDeduction[]
   tasks             OperationalTask[]
   inventoryChecks   InventoryCheck[]
@@ -131,13 +132,13 @@ model DepositDeduction {
   invoiceUrl    String?
   createdAt     DateTime @default(now())
 
-  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  reservation Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
 
   @@map("deposit_deductions")
 }
 
 model OperationalTask {
-  id            String      @id @default(cuid())
+  id            String     @id @default(cuid())
   mobileHomeId  String
   reservationId String?
   type          TaskType
@@ -148,11 +149,11 @@ model OperationalTask {
   status        TaskStatus
   completedAt   DateTime?
   notes         String?
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
 
-  mobileHome    MobileHome   @relation(fields: [mobileHomeId], references: [id], onDelete: Cascade)
-  reservation   Reservation? @relation(fields: [reservationId], references: [id])
+  mobileHome  MobileHome   @relation(fields: [mobileHomeId], references: [id], onDelete: Cascade)
+  reservation Reservation? @relation(fields: [reservationId], references: [id])
 
   @@map("operational_tasks")
 }
@@ -171,23 +172,23 @@ enum TaskStatus {
 }
 
 model InventoryItem {
-  id            String    @id @default(cuid())
-  mobileHomeId  String
-  name          String
-  category      String
-  quantity      Int
-  condition     String?
-  photos        String[]
-  lastChecked   DateTime?
+  id           String    @id @default(cuid())
+  mobileHomeId String
+  name         String
+  category     String
+  quantity     Int
+  condition    String?
+  photos       Json?
+  lastChecked  DateTime?
 
-  mobileHome    MobileHome @relation(fields: [mobileHomeId], references: [id], onDelete: Cascade)
-  checkItems    InventoryCheckItem[]
+  mobileHome MobileHome           @relation(fields: [mobileHomeId], references: [id], onDelete: Cascade)
+  checkItems InventoryCheckItem[]
 
   @@map("inventory_items")
 }
 
 model InventoryCheck {
-  id            String      @id @default(cuid())
+  id            String    @id @default(cuid())
   mobileHomeId  String
   reservationId String?
   checkType     CheckType
@@ -196,8 +197,8 @@ model InventoryCheck {
   notes         String?
   signatureUrl  String?
 
-  items         InventoryCheckItem[]
-  reservation   Reservation? @relation(fields: [reservationId], references: [id])
+  items       InventoryCheckItem[]
+  reservation Reservation?         @relation(fields: [reservationId], references: [id])
 
   @@map("inventory_checks")
 }
@@ -208,16 +209,16 @@ enum CheckType {
 }
 
 model InventoryCheckItem {
-  id              String    @id @default(cuid())
+  id              String        @id @default(cuid())
   checkId         String
   inventoryItemId String
   name            String
   condition       ItemCondition
   notes           String?
-  photos          String[]
+  photos          Json?
 
-  check           InventoryCheck @relation(fields: [checkId], references: [id], onDelete: Cascade)
-  inventoryItem   InventoryItem  @relation(fields: [inventoryItemId], references: [id])
+  check         InventoryCheck @relation(fields: [checkId], references: [id], onDelete: Cascade)
+  inventoryItem InventoryItem  @relation(fields: [inventoryItemId], references: [id])
 
   @@map("inventory_check_items")
 }
@@ -242,7 +243,7 @@ model Expense {
   notes         String?
   createdAt     DateTime        @default(now())
 
-  mobileHome    MobileHome? @relation(fields: [mobileHomeId], references: [id])
+  mobileHome MobileHome? @relation(fields: [mobileHomeId], references: [id])
 
   @@map("expenses")
 }
@@ -260,14 +261,14 @@ enum ExpenseCategory {
 }
 
 model Payment {
-  id            String        @id @default(cuid())
-  amount        Float
-  currency      String        @default("EUR")
-  status        PaymentStatus
-  stripePaymentId String?     @unique
-  metadata      Json?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id              String        @id @default(cuid())
+  amount          Float
+  currency        String        @default("EUR")
+  status          PaymentStatus
+  stripePaymentId String?       @unique
+  metadata        Json?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
   @@map("payments")
 }

@@ -9,8 +9,16 @@ export interface SessionData {
   isLoggedIn: boolean
 }
 
+const devFallbackSecret =
+  'dev-only-session-secret-must-be-at-least-32-characters-long'
+
+const sessionPassword =
+  process.env.SESSION_SECRET && process.env.SESSION_SECRET.length >= 32
+    ? process.env.SESSION_SECRET
+    : devFallbackSecret
+
 export const sessionOptions: SessionOptions = {
-  password: process.env.SESSION_SECRET!,
+  password: sessionPassword,
   cookieName: 'lmnp-serenity-session',
   cookieOptions: {
     secure: process.env.NODE_ENV === 'production',

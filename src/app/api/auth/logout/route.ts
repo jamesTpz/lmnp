@@ -5,7 +5,7 @@ import { sessionOptions, SessionData, defaultSession } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getIronSession<SessionData>(cookies(), sessionOptions)
+    const session = await getIronSession<SessionData>(await cookies(), sessionOptions)
 
     session.destroy()
 
