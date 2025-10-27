@@ -3,11 +3,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { mockReservations, mockTenants } from "@/lib/mock-data";
 import { DepositStatus } from "@/types";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { DollarSign, CheckCircle, Clock, AlertTriangle } from "lucide-react";
+import { DollarSign, CheckCircle, Clock, AlertTriangle, Loader2 } from "lucide-react";
+import { useReservations } from "@/hooks/useData";
 
 const depositStatusColors = {
   [DepositStatus.AWAITING]: "warning",
@@ -34,7 +34,9 @@ const depositStatusIcons = {
 };
 
 export function DepositsView() {
-  const totalDepositsHeld = mockReservations
+  const { reservations, loading } = useReservations();
+
+  const totalDepositsHeld = reservations
     .filter(
       (r) =>
         r.depositStatus === DepositStatus.RECEIVED ||
@@ -42,9 +44,17 @@ export function DepositsView() {
     )
     .reduce((sum, r) => sum + r.depositAmount, 0);
 
-  const depositsAwaiting = mockReservations.filter(
+  const depositsAwaiting = reservations.filter(
     (r) => r.depositStatus === DepositStatus.AWAITING
   ).length;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -97,14 +107,14 @@ export function DepositsView() {
 
       {/* Deposits List */}
       <div className="grid gap-4">
-        {mockReservations
+        {reservations
           .sort(
             (a, b) =>
               new Date(b.checkInDate).getTime() -
               new Date(a.checkInDate).getTime()
           )
           .map((reservation) => {
-            const tenant = mockTenants.find((t) => t.id === reservation.tenantId);
+            const tenant = reservation.tenant;
             const StatusIcon = depositStatusIcons[reservation.depositStatus];
 
             return (
@@ -120,11 +130,11 @@ export function DepositsView() {
                       </CardTitle>
                       <p className="text-sm text-muted-foreground">
                         Séjour du{" "}
-                        {format(reservation.checkInDate, "dd MMM yyyy", {
+                        {format(new Date(reservation.checkInDate), "dd MMM yyyy", {
                           locale: fr,
                         })}{" "}
                         au{" "}
-                        {format(reservation.checkOutDate, "dd MMM yyyy", {
+                        {format(new Date(reservation.checkOutDate), "dd MMM yyyy", {
                           locale: fr,
                         })}
                       </p>
@@ -152,7 +162,7 @@ export function DepositsView() {
                             Date de réception
                           </span>
                           <span>
-                            {format(reservation.depositReceivedDate, "dd/MM/yyyy")}
+                            {format(new Date(reservation.depositReceivedDate), "dd/MM/yyyy")}
                           </span>
                         </div>
                       )}
@@ -162,7 +172,7 @@ export function DepositsView() {
                             Date remboursement
                           </span>
                           <span>
-                            {format(reservation.depositRefundedDate, "dd/MM/yyyy")}
+                            {format(new Date(reservation.depositRefundedDate), "dd/MM/yyyy")}
                           </span>
                         </div>
                       )}

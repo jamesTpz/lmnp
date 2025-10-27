@@ -1,10 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { mockTasks as initialTasks, mockMobileHomes } from "@/lib/mock-data";
 import { TaskType, TaskStatus } from "@/types";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -17,7 +15,9 @@ import {
   CheckCircle,
   Clock,
   Play,
+  Loader2,
 } from "lucide-react";
+import { useTasks } from "@/hooks/useData";
 
 const taskTypeColors = {
   [TaskType.CLEANING]: "default",
@@ -59,19 +59,14 @@ const taskStatusIcons = {
 };
 
 export function TasksView() {
-  const [tasks, setTasks] = useState(initialTasks);
+  const { tasks, loading, updateTask } = useTasks();
 
-  const updateTaskStatus = (taskId: string, newStatus: TaskStatus) => {
-    setTasks(tasks.map(task =>
-      task.id === taskId
-        ? {
-            ...task,
-            status: newStatus,
-            completedAt: newStatus === TaskStatus.COMPLETED ? new Date() : task.completedAt
-          }
-        : task
-    ));
-    alert(`Tâche mise à jour: ${newStatus === TaskStatus.COMPLETED ? "Terminée" : newStatus === TaskStatus.IN_PROGRESS ? "En cours" : "Pending"}`);
+  const updateTaskStatus = async (taskId: string, newStatus: TaskStatus) => {
+    try {
+      await updateTask(taskId, { status: newStatus });
+    } catch (err) {
+      alert("Erreur lors de la mise à jour de la tâche");
+    }
   };
 
   const pendingCount = tasks.filter(
@@ -83,6 +78,14 @@ export function TasksView() {
   const completedCount = tasks.filter(
     (t) => t.status === TaskStatus.COMPLETED
   ).length;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -153,9 +156,7 @@ export function TasksView() {
             );
           })
           .map((task) => {
-            const mobileHome = mockMobileHomes.find(
-              (m) => m.id === task.mobileHomeId
-            );
+            const mobileHome = task.mobileHome;
             const TypeIcon = taskTypeIcons[task.type];
             const StatusIcon = taskStatusIcons[task.status];
 
@@ -240,14 +241,14 @@ export function TasksView() {
                               : "text-muted-foreground"
                           }`}
                         >
-                          {format(task.dueDate, "dd MMMM yyyy", { locale: fr })}
+                          {format(new Date(task.dueDate), "dd MMMM yyyy", { locale: fr })}
                         </p>
                       </div>
                       {task.completedAt && (
                         <div>
                           <p className="text-sm font-medium">Complétée le</p>
                           <p className="text-sm text-green-600">
-                            {format(task.completedAt, "dd MMMM yyyy", {
+                            {format(new Date(task.completedAt), "dd MMMM yyyy", {
                               locale: fr,
                             })}
                           </p>

@@ -3,7 +3,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { mockExpenses } from "@/lib/mock-data";
 import { ExpenseCategory } from "@/types";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -14,9 +13,11 @@ import {
   TrendingDown,
   FileText,
   CheckCircle,
+  Loader2,
 } from "lucide-react";
 import { groupExpensesByCategory } from "@/lib/calculations";
 import { NewExpenseDialog } from "@/components/forms/new-expense-dialog";
+import { useExpenses } from "@/hooks/useData";
 
 const categoryLabels: Record<ExpenseCategory, string> = {
   [ExpenseCategory.PARCEL_RENT]: "Loyer Parcelle",
@@ -43,11 +44,21 @@ const categoryColors: Record<ExpenseCategory, string> = {
 };
 
 export function ExpensesView() {
-  const totalExpenses = mockExpenses.reduce((sum, e) => sum + e.amount, 0);
-  const deductibleExpenses = mockExpenses
+  const { expenses, loading } = useExpenses();
+
+  const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
+  const deductibleExpenses = expenses
     .filter((e) => e.taxDeductible)
     .reduce((sum, e) => sum + e.amount, 0);
-  const groupedExpenses = groupExpensesByCategory(mockExpenses);
+  const groupedExpenses = groupExpensesByCategory(expenses);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -83,7 +94,7 @@ export function ExpensesView() {
               {totalExpenses.toLocaleString("fr-FR")} €
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              {mockExpenses.length} dépenses
+              {expenses.length} dépenses
             </p>
           </CardContent>
         </Card>

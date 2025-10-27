@@ -4,14 +4,16 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { mockReservations, mockTenants } from "@/lib/mock-data";
 import { ReservationStatus, Platform } from "@/types";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isWithinInterval } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { useReservations } from "@/hooks/useData";
+import { NewReservationDialog } from "@/components/forms/new-reservation-dialog";
 
 export function CalendarView() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const { reservations, loading } = useReservations();
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
@@ -19,10 +21,10 @@ export function CalendarView() {
 
   // Get reservations for current month
   const getReservationsForDay = (date: Date) => {
-    return mockReservations.filter((reservation) =>
+    return reservations.filter((reservation) =>
       isWithinInterval(date, {
-        start: reservation.checkInDate,
-        end: reservation.checkOutDate,
+        start: new Date(reservation.checkInDate),
+        end: new Date(reservation.checkOutDate),
       }) && reservation.status !== ReservationStatus.CANCELLED
     );
   };
@@ -47,6 +49,14 @@ export function CalendarView() {
     [Platform.OTHER]: "bg-gray-100 text-gray-800 border-gray-300",
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -56,10 +66,7 @@ export function CalendarView() {
             Vue mensuelle de vos réservations et disponibilités
           </p>
         </div>
-        <Button>
-          <CalendarIcon className="mr-2 h-4 w-4" />
-          Nouvelle Réservation
-        </Button>
+        <NewReservationDialog />
       </div>
 
       {/* Calendar Navigation */}
@@ -112,11 +119,9 @@ export function CalendarView() {
                   </div>
                   <div className="mt-1 space-y-1">
                     {reservations.map((reservation) => {
-                      const tenant = mockTenants.find(
-                        (t) => t.id === reservation.tenantId
-                      );
-                      const isCheckIn = isSameDay(day, reservation.checkInDate);
-                      const isCheckOut = isSameDay(day, reservation.checkOutDate);
+                      const tenant = reservation.tenant;
+                      const isCheckIn = isSameDay(day, new Date(reservation.checkInDate));
+                      const isCheckOut = isSameDay(day, new Date(reservation.checkOutDate));
 
                       return (
                         <div
@@ -186,16 +191,16 @@ export function CalendarView() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {mockReservations
+            {reservations
               .filter(
                 (r) =>
                   r.status === ReservationStatus.CONFIRMED &&
-                  r.checkInDate >= new Date()
+                  new Date(r.checkInDate) >= new Date()
               )
-              .sort((a, b) => a.checkInDate.getTime() - b.checkInDate.getTime())
+              .sort((a, b) => new Date(a.checkInDate).getTime() - new Date(b.checkInDate).getTime())
               .slice(0, 5)
               .map((reservation) => {
-                const tenant = mockTenants.find((t) => t.id === reservation.tenantId);
+                const tenant = reservation.tenant;
                 return (
                   <div
                     key={reservation.id}
@@ -206,9 +211,9 @@ export function CalendarView() {
                         {tenant?.firstName} {tenant?.lastName}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        {format(reservation.checkInDate, "dd MMM yyyy", { locale: fr })}
+                        {format(new Date(reservation.checkInDate), "dd MMM yyyy", { locale: fr })}
                         {" → "}
-                        {format(reservation.checkOutDate, "dd MMM yyyy", { locale: fr })}
+                        {format(new Date(reservation.checkOutDate), "dd MMM yyyy", { locale: fr })}
                       </p>
                     </div>
                     <Badge variant="outline">{reservation.platform}</Badge>

@@ -3,12 +3,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { mockReservations, mockTenants, mockMobileHomes } from "@/lib/mock-data";
 import { ReservationStatus, Platform } from "@/types";
 import { format, differenceInDays } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Calendar, User, MapPin, Euro, ExternalLink } from "lucide-react";
+import { Calendar, User, MapPin, Euro, ExternalLink, Loader2, Download, FileText } from "lucide-react";
 import { NewReservationDialog } from "@/components/forms/new-reservation-dialog";
+import { useReservations } from "@/hooks/useData";
 
 const statusColors = {
   [ReservationStatus.PENDING]: "outline",
@@ -35,6 +35,24 @@ const platformLabels = {
 };
 
 export function ReservationsView() {
+  const { reservations, loading, deleteReservation } = useReservations();
+
+  const handleDownloadContract = (reservationId: string) => {
+    window.open(`/api/pdf/contract/${reservationId}`, '_blank');
+  };
+
+  const handleDownloadInventory = (reservationId: string, type: 'CHECK_IN' | 'CHECK_OUT') => {
+    window.open(`/api/pdf/inventory/${reservationId}?type=${type}`, '_blank');
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -47,22 +65,32 @@ export function ReservationsView() {
         <NewReservationDialog />
       </div>
 
-      <div className="grid gap-4">
-        {mockReservations
-          .sort(
-            (a, b) =>
-              new Date(a.checkInDate).getTime() -
-              new Date(b.checkInDate).getTime()
-          )
-          .map((reservation) => {
-            const tenant = mockTenants.find((t) => t.id === reservation.tenantId);
-            const mobileHome = mockMobileHomes.find(
-              (m) => m.id === reservation.mobileHomeId
-            );
-            const nights = differenceInDays(
-              reservation.checkOutDate,
-              reservation.checkInDate
-            );
+      {reservations.length === 0 ? (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Aucune réservation</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Commencez par créer votre première réservation
+            </p>
+            <NewReservationDialog />
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-4">
+          {reservations
+            .sort(
+              (a, b) =>
+                new Date(a.checkInDate).getTime() -
+                new Date(b.checkInDate).getTime()
+            )
+            .map((reservation) => {
+              const tenant = reservation.tenant;
+              const mobileHome = reservation.mobileHome;
+              const nights = differenceInDays(
+                new Date(reservation.checkOutDate),
+                new Date(reservation.checkInDate)
+              );
 
             return (
               <Card key={reservation.id} className="hover:shadow-md transition-shadow">
@@ -160,28 +188,47 @@ export function ReservationsView() {
                     </div>
                   </div>
 
-                  <div className="mt-4 flex gap-2 border-t pt-4">
-                    <Button variant="outline" size="sm">
-                      <ExternalLink className="mr-2 h-3 w-3" />
-                      Voir Détails
+                  <div className="mt-4 flex flex-wrap gap-2 border-t pt-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDownloadContract(reservation.id)}
+                    >
+                      <Download className="mr-2 h-3 w-3" />
+                      Contrat PDF
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDownloadInventory(reservation.id, 'CHECK_IN')}
+                    >
+                      <FileText className="mr-2 h-3 w-3" />
+                      État Lieux Entrée
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDownloadInventory(reservation.id, 'CHECK_OUT')}
+                    >
+                      <FileText className="mr-2 h-3 w-3" />
+                      État Lieux Sortie
                     </Button>
                     {!reservation.confirmationSent && (
-                      <Button variant="default" size="sm">
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => alert('Fonctionnalité d\'envoi d\'email à venir')}
+                      >
                         Envoyer Confirmation
                       </Button>
                     )}
-                    {reservation.status === ReservationStatus.CONFIRMED &&
-                      !reservation.arrivalInstructionsSent && (
-                        <Button variant="outline" size="sm">
-                          Instructions d&apos;Arrivée
-                        </Button>
-                      )}
                   </div>
                 </CardContent>
               </Card>
             );
           })}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

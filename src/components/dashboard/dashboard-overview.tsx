@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -10,18 +9,33 @@ import {
   Percent,
   AlertCircle,
   CheckCircle,
+  Loader2,
 } from "lucide-react";
-import { mockReservations, mockExpenses, mockTasks } from "@/lib/mock-data";
 import { calculateDashboardStats } from "@/lib/calculations";
 import { TaskStatus } from "@/types";
 import { NewReservationDialog } from "@/components/forms/new-reservation-dialog";
 import { NewExpenseDialog } from "@/components/forms/new-expense-dialog";
+import { useReservations, useExpenses, useTasks } from "@/hooks/useData";
 
 export function DashboardOverview() {
-  const stats = calculateDashboardStats(mockReservations, mockExpenses);
-  const pendingTasks = mockTasks.filter(
+  const { reservations, loading: loadingReservations } = useReservations();
+  const { expenses, loading: loadingExpenses } = useExpenses();
+  const { tasks, loading: loadingTasks } = useTasks();
+
+  const loading = loadingReservations || loadingExpenses || loadingTasks;
+
+  const stats = calculateDashboardStats(reservations, expenses);
+  const pendingTasks = tasks.filter(
     (t) => t.status === TaskStatus.PENDING
   ).length;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
