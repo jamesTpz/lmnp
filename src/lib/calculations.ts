@@ -1,6 +1,11 @@
 import { Reservation, Expense, DashboardStats, ReservationStatus } from "@/types";
 import { differenceInDays, isWithinInterval, startOfMonth, endOfMonth } from "date-fns";
 
+// Coerce runtime values to Date (API JSON renvoie des chaînes ISO)
+function toDate(value: any): Date {
+  return value instanceof Date ? value : new Date(value);
+}
+
 /**
  * Calculates dashboard statistics from reservations and expenses
  */
@@ -76,11 +81,11 @@ export function calculateOccupancyRate(reservations: Reservation[]): number {
     .filter(
       (r) =>
         r.status !== ReservationStatus.CANCELLED &&
-        (r.checkInDate.getFullYear() === currentYear ||
-          r.checkOutDate.getFullYear() === currentYear)
+        (toDate(r.checkInDate).getFullYear() === currentYear ||
+          toDate(r.checkOutDate).getFullYear() === currentYear)
     )
     .reduce((sum, r) => {
-      const nights = differenceInDays(r.checkOutDate, r.checkInDate);
+      const nights = differenceInDays(toDate(r.checkOutDate), toDate(r.checkInDate));
       return sum + nights;
     }, 0);
 
@@ -101,7 +106,7 @@ export function calculateAverageNightlyRate(
 
   const totalRevenue = validReservations.reduce((sum, r) => sum + r.totalPrice, 0);
   const totalNights = validReservations.reduce((sum, r) => {
-    return sum + differenceInDays(r.checkOutDate, r.checkInDate);
+    return sum + differenceInDays(toDate(r.checkOutDate), toDate(r.checkInDate));
   }, 0);
 
   return totalNights > 0 ? Math.round(totalRevenue / totalNights) : 0;
@@ -121,8 +126,8 @@ export function countUpcomingCheckIns(
   return reservations.filter(
     (r) =>
       r.status === ReservationStatus.CONFIRMED &&
-      r.checkInDate >= now &&
-      r.checkInDate <= futureDate
+      toDate(r.checkInDate) >= now &&
+      toDate(r.checkInDate) <= futureDate
   ).length;
 }
 
@@ -136,7 +141,7 @@ export function calculateMonthlyExpenses(expenses: Expense[]): number {
 
   return expenses
     .filter((e) =>
-      isWithinInterval(e.date, { start: monthStart, end: monthEnd })
+      isWithinInterval(toDate(e.date), { start: monthStart, end: monthEnd })
     )
     .reduce((sum, e) => sum + e.amount, 0);
 }
@@ -158,12 +163,12 @@ export function calculateNetProfit(
       .filter(
         (r) =>
           r.status !== ReservationStatus.CANCELLED &&
-          isWithinInterval(r.checkInDate, { start: startDate, end: endDate })
+          isWithinInterval(toDate(r.checkInDate), { start: startDate, end: endDate })
       )
       .reduce((sum, r) => sum + r.netRevenue, 0);
 
     totalExpenses = expenses
-      .filter((e) => isWithinInterval(e.date, { start: startDate, end: endDate }))
+      .filter((e) => isWithinInterval(toDate(e.date), { start: startDate, end: endDate }))
       .reduce((sum, e) => sum + e.amount, 0);
   } else {
     revenue = reservations

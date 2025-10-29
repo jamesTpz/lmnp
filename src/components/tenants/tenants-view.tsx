@@ -6,10 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useTenants } from "@/hooks/useData";
-import { User, Mail, Phone, MapPin, Plus, Loader2, Edit, Trash2, AlertCircle } from "lucide-react";
+import { User, Mail, Phone, Plus, Loader2, Edit, Trash2, AlertCircle } from "lucide-react";
 
 export function TenantsView() {
   const { tenants, loading, createTenant, updateTenant, deleteTenant } = useTenants();
@@ -22,12 +21,7 @@ export function TenantsView() {
     email: "",
     phone: "",
     address: "",
-    city: "",
-    postalCode: "",
-    country: "France",
-    emergencyContact: "",
-    emergencyPhone: "",
-    notes: "",
+    identityDocument: "",
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,12 +33,7 @@ export function TenantsView() {
       email: "",
       phone: "",
       address: "",
-      city: "",
-      postalCode: "",
-      country: "France",
-      emergencyContact: "",
-      emergencyPhone: "",
-      notes: "",
+      identityDocument: "",
     });
     setError(null);
     setIsEditMode(false);
@@ -61,12 +50,7 @@ export function TenantsView() {
         email: tenant.email || "",
         phone: tenant.phone || "",
         address: tenant.address || "",
-        city: tenant.city || "",
-        postalCode: tenant.postalCode || "",
-        country: tenant.country || "France",
-        emergencyContact: tenant.emergencyContact || "",
-        emergencyPhone: tenant.emergencyPhone || "",
-        notes: tenant.notes || "",
+        identityDocument: tenant.identityDocument || "",
       });
     } else {
       resetForm();
@@ -209,71 +193,17 @@ export function TenantsView() {
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="city">Ville</Label>
-                  <Input
-                    id="city"
-                    value={formData.city}
-                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                    disabled={submitting}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="postalCode">Code Postal</Label>
-                  <Input
-                    id="postalCode"
-                    value={formData.postalCode}
-                    onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
-                    disabled={submitting}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="country">Pays</Label>
-                  <Input
-                    id="country"
-                    value={formData.country}
-                    onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                    disabled={submitting}
-                  />
-                </div>
-              </div>
-
-              <div className="border-t pt-4">
-                <h4 className="font-medium mb-3">Contact d'urgence</h4>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="emergencyContact">Nom du contact</Label>
-                    <Input
-                      id="emergencyContact"
-                      value={formData.emergencyContact}
-                      onChange={(e) => setFormData({ ...formData, emergencyContact: e.target.value })}
-                      disabled={submitting}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="emergencyPhone">Téléphone d'urgence</Label>
-                    <Input
-                      id="emergencyPhone"
-                      type="tel"
-                      value={formData.emergencyPhone}
-                      onChange={(e) => setFormData({ ...formData, emergencyPhone: e.target.value })}
-                      disabled={submitting}
-                    />
-                  </div>
-                </div>
-              </div>
-
               <div className="space-y-2">
-                <Label htmlFor="notes">Notes</Label>
-                <Textarea
-                  id="notes"
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  rows={3}
+                <Label htmlFor="identityDocument">Pièce d'identité (référence)</Label>
+                <Input
+                  id="identityDocument"
+                  value={formData.identityDocument}
+                  onChange={(e) => setFormData({ ...formData, identityDocument: e.target.value })}
                   disabled={submitting}
                 />
               </div>
+
+              {/* Champs supprimés: ville, code postal, pays, contact d'urgence, notes */}
 
               <div className="flex justify-end gap-2 pt-4">
                 <Button
@@ -349,12 +279,6 @@ export function TenantsView() {
                     <Phone className="h-4 w-4" />
                     <span>{tenant.phone}</span>
                   </div>
-                  {tenant.city && (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <MapPin className="h-4 w-4" />
-                      <span>{tenant.city}</span>
-                    </div>
-                  )}
                 </div>
 
                 <div className="flex gap-2 mt-4 pt-4 border-t">

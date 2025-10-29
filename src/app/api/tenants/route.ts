@@ -7,7 +7,7 @@ import { prisma } from '@/lib/prisma'
 // GET all tenants for the logged-in user
 export async function GET(request: NextRequest) {
   try {
-    const session = await getIronSession<SessionData>(cookies(), sessionOptions)
+    const session = await getIronSession<SessionData>(await cookies(), sessionOptions)
 
     if (!session.isLoggedIn) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
@@ -39,26 +39,14 @@ export async function GET(request: NextRequest) {
 // POST create a new tenant
 export async function POST(request: NextRequest) {
   try {
-    const session = await getIronSession<SessionData>(cookies(), sessionOptions)
+    const session = await getIronSession<SessionData>(await cookies(), sessionOptions)
 
     if (!session.isLoggedIn) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
     }
 
     const body = await request.json()
-    const {
-      firstName,
-      lastName,
-      email,
-      phone,
-      address,
-      city,
-      postalCode,
-      country,
-      emergencyContact,
-      emergencyPhone,
-      notes,
-    } = body
+    const { firstName, lastName, email, phone, address, identityDocument } = body
 
     // Validate required fields
     if (!firstName || !lastName || !email || !phone) {
@@ -75,12 +63,7 @@ export async function POST(request: NextRequest) {
         email,
         phone,
         address,
-        city,
-        postalCode,
-        country,
-        emergencyContact,
-        emergencyPhone,
-        notes,
+        identityDocument,
       },
     })
 
