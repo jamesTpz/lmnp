@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { ReservationStatus, Platform } from "@/types";
 import { format, differenceInDays } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Calendar, User, MapPin, Euro, ExternalLink, Loader2, Download, FileText } from "lucide-react";
+import { Calendar, User, MapPin, Euro, ExternalLink, Loader2, Download, FileText, ClipboardCheck } from "lucide-react";
 import { NewReservationDialog } from "@/components/forms/new-reservation-dialog";
 import { useReservations } from "@/hooks/useData";
+import { InventoryCheckForm } from "@/components/inventory/inventory-check-form";
 
 const statusColors = {
   [ReservationStatus.PENDING]: "outline",
@@ -188,40 +189,56 @@ export function ReservationsView() {
                     </div>
                   </div>
 
-                  <div className="mt-4 flex flex-wrap gap-2 border-t pt-4">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDownloadContract(reservation.id)}
-                    >
-                      <Download className="mr-2 h-3 w-3" />
-                      Contrat PDF
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDownloadInventory(reservation.id, 'CHECK_IN')}
-                    >
-                      <FileText className="mr-2 h-3 w-3" />
-                      État Lieux Entrée
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDownloadInventory(reservation.id, 'CHECK_OUT')}
-                    >
-                      <FileText className="mr-2 h-3 w-3" />
-                      État Lieux Sortie
-                    </Button>
-                    {!reservation.confirmationSent && (
+                  <div className="mt-4 space-y-3 border-t pt-4">
+                    <div className="flex flex-wrap gap-2">
+                      <InventoryCheckForm
+                        mobileHomeId={reservation.mobileHomeId}
+                        mobileHomeName={mobileHome?.name || "Mobile Home"}
+                        reservationId={reservation.id}
+                        checkType="CHECK_IN"
+                      />
+                      <InventoryCheckForm
+                        mobileHomeId={reservation.mobileHomeId}
+                        mobileHomeName={mobileHome?.name || "Mobile Home"}
+                        reservationId={reservation.id}
+                        checkType="CHECK_OUT"
+                      />
+                    </div>
+                    <div className="flex flex-wrap gap-2">
                       <Button
-                        variant="default"
+                        variant="outline"
                         size="sm"
-                        onClick={() => alert('Fonctionnalité d\'envoi d\'email à venir')}
+                        onClick={() => handleDownloadContract(reservation.id)}
                       >
-                        Envoyer Confirmation
+                        <Download className="mr-2 h-3 w-3" />
+                        Contrat PDF
                       </Button>
-                    )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDownloadInventory(reservation.id, 'CHECK_IN')}
+                      >
+                        <FileText className="mr-2 h-3 w-3" />
+                        PDF État Entrée
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDownloadInventory(reservation.id, 'CHECK_OUT')}
+                      >
+                        <FileText className="mr-2 h-3 w-3" />
+                        PDF État Sortie
+                      </Button>
+                      {!reservation.confirmationSent && (
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => alert('Fonctionnalité d\'envoi d\'email à venir')}
+                        >
+                          Envoyer Confirmation
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>

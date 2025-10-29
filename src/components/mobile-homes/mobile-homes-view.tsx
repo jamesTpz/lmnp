@@ -9,13 +9,16 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useMobileHomes } from "@/hooks/useData";
-import { Home, MapPin, Users, Bed, Bath, Euro, Plus, Loader2, Edit, Trash2, AlertCircle } from "lucide-react";
+import { Home, MapPin, Users, Bed, Bath, Euro, Plus, Loader2, Edit, Trash2, AlertCircle, Package } from "lucide-react";
+import { InventoryManagement } from "@/components/inventory/inventory-management";
 
 export function MobileHomesView() {
   const { mobileHomes, loading, createMobileHome, updateMobileHome, deleteMobileHome } = useMobileHomes();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedMobileHome, setSelectedMobileHome] = useState<any>(null);
+  const [isInventoryDialogOpen, setIsInventoryDialogOpen] = useState(false);
+  const [inventoryMobileHome, setInventoryMobileHome] = useState<any>(null);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -116,6 +119,11 @@ export function MobileHomesView() {
         alert(err.message || "Erreur lors de la suppression");
       }
     }
+  };
+
+  const handleOpenInventory = (mobileHome: any) => {
+    setInventoryMobileHome(mobileHome);
+    setIsInventoryDialogOpen(true);
   };
 
   if (loading) {
@@ -395,29 +403,60 @@ export function MobileHomesView() {
                   </div>
                 )}
 
-                <div className="flex gap-2 mt-4 pt-4 border-t">
+                <div className="flex flex-col gap-2 mt-4 pt-4 border-t">
                   <Button
-                    variant="outline"
+                    variant="default"
                     size="sm"
-                    className="flex-1"
-                    onClick={() => handleOpenDialog(mobileHome)}
+                    onClick={() => handleOpenInventory(mobileHome)}
                   >
-                    <Edit className="mr-2 h-3 w-3" />
-                    Modifier
+                    <Package className="mr-2 h-3 w-3" />
+                    Gérer l'Inventaire
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDelete(mobileHome.id, mobileHome.name)}
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => handleOpenDialog(mobileHome)}
+                    >
+                      <Edit className="mr-2 h-3 w-3" />
+                      Modifier
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(mobileHome.id, mobileHome.name)}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
       )}
+
+      {/* Inventory Management Dialog */}
+      <Dialog open={isInventoryDialogOpen} onOpenChange={setIsInventoryDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Package className="h-5 w-5" />
+              Gestion de l'Inventaire
+            </DialogTitle>
+            <DialogDescription>
+              Gérez l'inventaire complet de ce mobile home pour les états des lieux
+            </DialogDescription>
+          </DialogHeader>
+          {inventoryMobileHome && (
+            <InventoryManagement
+              mobileHomeId={inventoryMobileHome.id}
+              mobileHomeName={inventoryMobileHome.name}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

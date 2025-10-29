@@ -106,6 +106,7 @@ interface InventoryItem {
   category: string
   quantity: number
   condition?: string
+  notes?: string
 }
 
 interface InventoryFormProps {
@@ -124,12 +125,19 @@ interface InventoryFormProps {
   }
   items: InventoryItem[]
   checkType: 'CHECK_IN' | 'CHECK_OUT'
+  performedBy?: string
+  performedAt?: Date
+  notes?: string
 }
 
-export function InventoryForm({ mobileHome, reservation, tenant, items, checkType }: InventoryFormProps) {
+export function InventoryForm({ mobileHome, reservation, tenant, items, checkType, performedBy, performedAt, notes }: InventoryFormProps) {
   const date = checkType === 'CHECK_IN'
     ? new Date(reservation.checkInDate).toLocaleDateString('fr-FR')
     : new Date(reservation.checkOutDate).toLocaleDateString('fr-FR')
+
+  const performedDate = performedAt
+    ? new Date(performedAt).toLocaleDateString('fr-FR')
+    : date
 
   const groupedItems = items.reduce((acc, item) => {
     if (!acc[item.category]) {
@@ -158,14 +166,24 @@ export function InventoryForm({ mobileHome, reservation, tenant, items, checkTyp
             <Text style={styles.bold}>Localisation :</Text> {mobileHome.location}
           </Text>
           <Text style={styles.text}>
-            <Text style={styles.bold}>Date :</Text> {date}
+            <Text style={styles.bold}>Date prévue :</Text> {date}
           </Text>
+          {performedAt && (
+            <Text style={styles.text}>
+              <Text style={styles.bold}>Date d'exécution :</Text> {performedDate}
+            </Text>
+          )}
           <Text style={styles.text}>
             <Text style={styles.bold}>Locataire :</Text> {tenant.firstName} {tenant.lastName}
           </Text>
           <Text style={styles.text}>
             <Text style={styles.bold}>Référence réservation :</Text> {reservation.id.slice(0, 8)}
           </Text>
+          {performedBy && (
+            <Text style={styles.text}>
+              <Text style={styles.bold}>Effectué par :</Text> {performedBy}
+            </Text>
+          )}
         </View>
 
         <View style={styles.section}>
@@ -190,7 +208,7 @@ export function InventoryForm({ mobileHome, reservation, tenant, items, checkTyp
                     <Text style={[styles.tableCell, styles.itemName]}>{item.name}</Text>
                     <Text style={[styles.tableCell, styles.quantity]}>{item.quantity}</Text>
                     <Text style={[styles.tableCell, styles.condition]}>{item.condition || '_________'}</Text>
-                    <Text style={[styles.tableCell, styles.notes]}>_______________</Text>
+                    <Text style={[styles.tableCell, styles.notes]}>{item.notes || '_______________'}</Text>
                   </View>
                 ))}
               </View>
@@ -201,16 +219,22 @@ export function InventoryForm({ mobileHome, reservation, tenant, items, checkTyp
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>OBSERVATIONS GÉNÉRALES</Text>
           <View style={{ border: '1px solid #ccc', padding: 10, minHeight: 60 }}>
-            <Text style={styles.text}>_____________________________________________</Text>
-            <Text style={styles.text}>_____________________________________________</Text>
-            <Text style={styles.text}>_____________________________________________</Text>
+            {notes ? (
+              <Text style={styles.text}>{notes}</Text>
+            ) : (
+              <>
+                <Text style={styles.text}>_____________________________________________</Text>
+                <Text style={styles.text}>_____________________________________________</Text>
+                <Text style={styles.text}>_____________________________________________</Text>
+              </>
+            )}
           </View>
         </View>
 
         <View style={styles.signature}>
           <View style={styles.signatureBlock}>
             <Text style={[styles.text, styles.bold]}>Propriétaire / Représentant</Text>
-            <Text style={styles.text}>Nom : ______________________</Text>
+            <Text style={styles.text}>Nom : {performedBy || '______________________'}</Text>
             <View style={styles.signatureLine}>
               <Text>Signature</Text>
             </View>

@@ -36,6 +36,22 @@ export async function GET(
           },
         },
         tenant: true,
+        inventoryChecks: {
+          where: {
+            checkType,
+          },
+          include: {
+            items: {
+              include: {
+                inventoryItem: true,
+              },
+            },
+          },
+          orderBy: {
+            performedAt: 'desc',
+          },
+          take: 1,
+        },
       },
     })
 
@@ -44,6 +60,37 @@ export async function GET(
         { error: 'Réservation non trouvée' },
         { status: 404 }
       )
+    }
+
+    // Check if an inventory check was performed
+    const inventoryCheck = reservation.inventoryChecks[0]
+
+    // Use actual inventory check data if available, otherwise use template inventory
+    let items
+    let performedBy
+    let performedAt
+    let notes
+
+    if (inventoryCheck) {
+      // Use data from the completed inventory check
+      items = inventoryCheck.items.map(item => ({
+        name: item.name,
+        category: item.inventoryItem.category,
+        quantity: item.inventoryItem.quantity,
+        condition: item.condition,
+        notes: item.notes || undefined,
+      }))
+      performedBy = inventoryCheck.performedBy
+      performedAt = inventoryCheck.performedAt
+      notes = inventoryCheck.notes || undefined
+    } else {
+      // Use template inventory for blank form
+      items = reservation.mobileHome.inventory.map(item => ({
+        name: item.name,
+        category: item.category,
+        quantity: item.quantity,
+        condition: item.condition || undefined,
+      }))
     }
 
     // Generate PDF
@@ -62,13 +109,11 @@ export async function GET(
           firstName: reservation.tenant.firstName,
           lastName: reservation.tenant.lastName,
         },
-        items: reservation.mobileHome.inventory.map(item => ({
-          name: item.name,
-          category: item.category,
-          quantity: item.quantity,
-          condition: item.condition || undefined,
-        })),
+        items,
         checkType,
+        performedBy,
+        performedAt,
+        notes,
       })
     )
 

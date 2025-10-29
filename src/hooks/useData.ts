@@ -433,3 +433,209 @@ export function useTenants() {
     deleteTenant,
   }
 }
+
+export function useInventory(mobileHomeId: string | null) {
+  const [inventoryItems, setInventoryItems] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchInventory = async () => {
+    if (!mobileHomeId) {
+      setInventoryItems([])
+      setLoading(false)
+      return
+    }
+
+    try {
+      setLoading(true)
+      const response = await fetch(`/api/inventory?mobileHomeId=${mobileHomeId}`)
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la récupération de l\'inventaire')
+      }
+
+      const data = await response.json()
+      setInventoryItems(data.inventoryItems || [])
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchInventory()
+  }, [mobileHomeId])
+
+  const createInventoryItem = async (itemData: any) => {
+    try {
+      const response = await fetch('/api/inventory', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(itemData),
+      })
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la création')
+      }
+
+      const data = await response.json()
+      setInventoryItems([...inventoryItems, data.inventoryItem])
+      return data.inventoryItem
+    } catch (err: any) {
+      throw err
+    }
+  }
+
+  const updateInventoryItem = async (id: string, updates: any) => {
+    try {
+      const response = await fetch(`/api/inventory/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      })
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la mise à jour')
+      }
+
+      const data = await response.json()
+      setInventoryItems(inventoryItems.map(item => item.id === id ? data.inventoryItem : item))
+      return data.inventoryItem
+    } catch (err: any) {
+      throw err
+    }
+  }
+
+  const deleteInventoryItem = async (id: string) => {
+    try {
+      const response = await fetch(`/api/inventory/${id}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Erreur lors de la suppression')
+      }
+
+      setInventoryItems(inventoryItems.filter(item => item.id !== id))
+    } catch (err: any) {
+      throw err
+    }
+  }
+
+  return {
+    inventoryItems,
+    loading,
+    error,
+    refreshInventory: fetchInventory,
+    createInventoryItem,
+    updateInventoryItem,
+    deleteInventoryItem,
+  }
+}
+
+export function useInventoryChecks(mobileHomeId?: string, reservationId?: string) {
+  const [inventoryChecks, setInventoryChecks] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchInventoryChecks = async () => {
+    if (!mobileHomeId && !reservationId) {
+      setInventoryChecks([])
+      setLoading(false)
+      return
+    }
+
+    try {
+      setLoading(true)
+      const params = new URLSearchParams()
+      if (mobileHomeId) params.append('mobileHomeId', mobileHomeId)
+      if (reservationId) params.append('reservationId', reservationId)
+
+      const response = await fetch(`/api/inventory-checks?${params}`)
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la récupération des états des lieux')
+      }
+
+      const data = await response.json()
+      setInventoryChecks(data.inventoryChecks || [])
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchInventoryChecks()
+  }, [mobileHomeId, reservationId])
+
+  const createInventoryCheck = async (checkData: any) => {
+    try {
+      const response = await fetch('/api/inventory-checks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(checkData),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Erreur lors de la création')
+      }
+
+      const data = await response.json()
+      setInventoryChecks([data.inventoryCheck, ...inventoryChecks])
+      return data.inventoryCheck
+    } catch (err: any) {
+      throw err
+    }
+  }
+
+  const updateInventoryCheck = async (id: string, updates: any) => {
+    try {
+      const response = await fetch(`/api/inventory-checks/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      })
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la mise à jour')
+      }
+
+      const data = await response.json()
+      setInventoryChecks(inventoryChecks.map(check => check.id === id ? data.inventoryCheck : check))
+      return data.inventoryCheck
+    } catch (err: any) {
+      throw err
+    }
+  }
+
+  const deleteInventoryCheck = async (id: string) => {
+    try {
+      const response = await fetch(`/api/inventory-checks/${id}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la suppression')
+      }
+
+      setInventoryChecks(inventoryChecks.filter(check => check.id !== id))
+    } catch (err: any) {
+      throw err
+    }
+  }
+
+  return {
+    inventoryChecks,
+    loading,
+    error,
+    refreshInventoryChecks: fetchInventoryChecks,
+    createInventoryCheck,
+    updateInventoryCheck,
+    deleteInventoryCheck,
+  }
+}
